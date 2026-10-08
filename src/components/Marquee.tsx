@@ -17,19 +17,25 @@ interface Product {
 
 const Marquee = async () => {
     const res = await fetch(
-        "https://api.api-store.workers.dev/api/bazardor/products"
+        "https://api.abcz.workers.dev/api/bazardor/products",
+        {
+            cache: "no-store",
+        }
     );
+
+    if (!res.ok) {
+        return null;
+    }
 
     const products: Product[] = await res.json();
 
     return (
-        <div className="w-full mt-5">
-            <div className="w-full h-9 overflow-hidden">
-
+        <div className="mt-5 w-full">
+            <div className="h-9 w-full overflow-hidden">
                 <MarqueeText
                     direction="right"
                     loop={true}
-                    className="text-gray-700 text-sm font-semibold leading-9"
+                    className="text-sm font-semibold leading-9 text-gray-700"
                 >
                     {products.map((product) => (
                         <span
@@ -51,7 +57,7 @@ const Marquee = async () => {
                             )}
 
                             {product.change.dir === "down" && (
-                                <span className="text-green-600">
+                                <span className="text-[#05893E]">
                                     ▼ {Math.abs(product.change.pct)}%
                                 </span>
                             )}
@@ -68,10 +74,10 @@ const Marquee = async () => {
                         </span>
                     ))}
                 </MarqueeText>
-
             </div>
         </div>
     );
 };
 
 export default Marquee;
+

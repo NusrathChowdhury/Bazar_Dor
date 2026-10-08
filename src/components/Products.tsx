@@ -2,9 +2,11 @@ import Link from "next/link";
 
 interface Product {
     id: number;
+    slug: string;
     nameBn: string;
     categoryNameBn: string;
     image: string;
+    unit: string;
     today: number;
     change: {
         dir: "up" | "down" | "flat";
@@ -14,11 +16,23 @@ interface Product {
 
 const Products = async () => {
     const res = await fetch(
-        "https://api.api-store.workers.dev/api/bazardor/products",
+        "https://api.abcz.workers.dev/api/bazardor/products",
         {
             cache: "no-store",
         }
     );
+
+    if (!res.ok) {
+        return (
+            <section className="bg-[#F0F5F0] px-5 py-12">
+                <div className="mx-auto max-w-6xl text-center">
+                    <p className="text-gray-500">
+                        পণ্যের তথ্য লোড করা যায়নি।
+                    </p>
+                </div>
+            </section>
+        );
+    }
 
     const products: Product[] = await res.json();
 
@@ -37,38 +51,39 @@ const Products = async () => {
             <div className="mx-auto max-w-6xl">
 
                 {/* Price Increased */}
-                <div>
-                    <h2 className="mb-5 text-2xl font-bold">
+                <div id="আজ-দাম-বেড়েছে">
+                    <h2 className="mb-5 text-2xl font-bold text-gray-900">
                         আজ দাম বেড়েছে{" "}
-                        <span className="text-[#05893E]">▲</span>
+                        <span className="text-red-500">▲</span>
                     </h2>
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {risers.map((product) => (
                             <Link
-                                href={`/products/${product.id}`}
                                 key={product.id}
+                                href={`/products/${product.slug}`}
+                                className="block"
                             >
                                 <article className="rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:shadow-md">
 
                                     <div className="flex items-center justify-between gap-3">
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-3xl">
+                                        <div className="flex min-w-0 items-center gap-3">
+                                            <span className="shrink-0 text-3xl">
                                                 {product.image}
                                             </span>
 
-                                            <div>
-                                                <h3 className="font-bold text-gray-900">
+                                            <div className="min-w-0">
+                                                <h3 className="truncate font-bold text-gray-900">
                                                     {product.nameBn}
                                                 </h3>
 
                                                 <p className="text-sm text-gray-500">
-                                                    {product.categoryNameBn}
+                                                    প্রতি {product.unit}
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <span className="text-sm font-semibold text-[#05893E]">
+                                        <span className="shrink-0 text-sm font-semibold text-red-500">
                                             ▲ {Math.abs(product.change.pct)}%
                                         </span>
                                     </div>
@@ -78,8 +93,13 @@ const Products = async () => {
                                             আজকের দাম
                                         </p>
 
-                                        <p className="text-xl font-bold text-gray-900">
-                                            {product.today} টাকা
+                                        <p className="mt-1 text-xl text-gray-900">
+                                            <span className="font-bold">
+                                                {product.today}
+                                            </span>{" "}
+                                            <span className="font-normal">
+                                                টাকা
+                                            </span>
                                         </p>
                                     </div>
 
@@ -91,37 +111,38 @@ const Products = async () => {
 
                 {/* Price Decreased */}
                 <div className="mt-12">
-                    <h2 className="mb-5 text-2xl font-bold">
+                    <h2 className="mb-5 text-2xl font-bold text-gray-900">
                         আজ দাম কমেছে{" "}
-                        <span className="text-red-500">▼</span>
+                        <span className="text-[#05893E]">▼</span>
                     </h2>
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {fallers.map((product) => (
                             <Link
-                                href={`/products/${product.id}`}
                                 key={product.id}
+                                href={`/product/${product.slug}`}
+                                className="block"
                             >
                                 <article className="rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:shadow-md">
 
                                     <div className="flex items-center justify-between gap-3">
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-3xl">
+                                        <div className="flex min-w-0 items-center gap-3">
+                                            <span className="shrink-0 text-3xl">
                                                 {product.image}
                                             </span>
 
-                                            <div>
-                                                <h3 className="font-bold text-gray-900">
+                                            <div className="min-w-0">
+                                                <h3 className="truncate font-bold text-gray-900">
                                                     {product.nameBn}
                                                 </h3>
 
                                                 <p className="text-sm text-gray-500">
-                                                    {product.categoryNameBn}
+                                                    প্রতি {product.unit}
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <span className="text-sm font-semibold text-red-500">
+                                        <span className="shrink-0 text-sm font-semibold text-[#05893E]">
                                             ▼ {Math.abs(product.change.pct)}%
                                         </span>
                                     </div>
@@ -131,8 +152,13 @@ const Products = async () => {
                                             আজকের দাম
                                         </p>
 
-                                        <p className="text-xl font-bold text-gray-900">
-                                            {product.today} টাকা
+                                        <p className="mt-1 text-xl text-gray-900">
+                                            <span className="font-bold">
+                                                {product.today}
+                                            </span>{" "}
+                                            <span className="font-normal">
+                                                টাকা
+                                            </span>
                                         </p>
                                     </div>
 
@@ -147,7 +173,7 @@ const Products = async () => {
                     id="সব-পণ্য"
                     className="mt-12"
                 >
-                    <h2 className="mb-2 text-2xl font-bold">
+                    <h2 className="mb-2 text-2xl font-bold text-gray-900">
                         সব পণ্য
                     </h2>
 
@@ -158,42 +184,43 @@ const Products = async () => {
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {products.map((product) => (
                             <Link
-                                href={`/products/${product.id}`}
                                 key={product.id}
+                                href={`/product/${product.slug}`}
+                                className="block"
                             >
                                 <article className="rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:shadow-md">
 
                                     <div className="flex items-center justify-between gap-3">
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-3xl">
+                                        <div className="flex min-w-0 items-center gap-3">
+                                            <span className="shrink-0 text-3xl">
                                                 {product.image}
                                             </span>
 
-                                            <div>
-                                                <h3 className="font-bold text-gray-900">
+                                            <div className="min-w-0">
+                                                <h3 className="truncate font-bold text-gray-900">
                                                     {product.nameBn}
                                                 </h3>
 
                                                 <p className="text-sm text-gray-500">
-                                                    {product.categoryNameBn}
+                                                    প্রতি {product.unit}
                                                 </p>
                                             </div>
                                         </div>
 
                                         {product.change.dir === "up" && (
-                                            <span className="text-sm font-semibold text-[#05893E]">
+                                            <span className="shrink-0 text-sm font-semibold text-red-500">
                                                 ▲ {Math.abs(product.change.pct)}%
                                             </span>
                                         )}
 
                                         {product.change.dir === "down" && (
-                                            <span className="text-sm font-semibold text-red-500">
+                                            <span className="shrink-0 text-sm font-semibold text-[#05893E]">
                                                 ▼ {Math.abs(product.change.pct)}%
                                             </span>
                                         )}
 
                                         {product.change.dir === "flat" && (
-                                            <span className="text-sm text-gray-400">
+                                            <span className="shrink-0 text-sm text-gray-400">
                                                 — ০.০%
                                             </span>
                                         )}
@@ -204,8 +231,13 @@ const Products = async () => {
                                             আজকের দাম
                                         </p>
 
-                                        <p className="text-xl font-bold text-gray-900">
-                                            {product.today} টাকা
+                                        <p className="mt-1 text-xl text-gray-900">
+                                            <span className="font-bold">
+                                                {product.today}
+                                            </span>{" "}
+                                            <span className="font-normal">
+                                                টাকা
+                                            </span>
                                         </p>
                                     </div>
 
