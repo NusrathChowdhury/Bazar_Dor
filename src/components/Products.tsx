@@ -120,7 +120,7 @@ const Products = async () => {
                         {fallers.map((product) => (
                             <Link
                                 key={product.id}
-                                href={`/product/${product.slug}`}
+                                href={`/products/${product.slug}`}
                                 className="block"
                             >
                                 <article className="rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:shadow-md">
@@ -185,7 +185,7 @@ const Products = async () => {
                         {products.map((product) => (
                             <Link
                                 key={product.id}
-                                href={`/product/${product.slug}`}
+                                href={`/products/${product.slug}`}
                                 className="block"
                             >
                                 <article className="rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:shadow-md">

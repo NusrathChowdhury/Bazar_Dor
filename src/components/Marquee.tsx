@@ -1,4 +1,5 @@
 import MarqueeText from "react-marquee-text";
+import Link from "next/link";
 import "react-marquee-text/dist/styles.css";
 
 interface ProductChange {
@@ -8,6 +9,7 @@ interface ProductChange {
 
 interface Product {
     id: number;
+    slug: string;
     nameBn: string;
     categoryIcon: string;
     unit: string;
@@ -42,9 +44,12 @@ const Marquee = async () => {
                             key={product.id}
                             className="inline-flex items-center"
                         >
-                            <span>
+                            <Link
+                                href={`/products/${product.slug}`}
+                                className="transition hover:text-[#05893E]"
+                            >
                                 {product.categoryIcon} {product.nameBn}
-                            </span>
+                            </Link>
 
                             <span className="mx-2">
                                 {product.today} টাকা/{product.unit}
@@ -57,7 +62,7 @@ const Marquee = async () => {
                             )}
 
                             {product.change.dir === "down" && (
-                                <span className="text-[#05893E]">
+                                <span className="text-green-600">
                                     ▼ {Math.abs(product.change.pct)}%
                                 </span>
                             )}
@@ -80,4 +85,3 @@ const Marquee = async () => {
 };
 
 export default Marquee;
-
