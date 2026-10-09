@@ -1,5 +1,4 @@
 import Link from "next/link";
-import React from "react";
 
 interface Category {
     id: string;
@@ -60,7 +59,7 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
 
                     <Link
                         href="/"
-                        className="mt-6 inline-block rounded-lg bg-[#05893E] px-5 py-3 font-semibold text-white"
+                        className="mt-6 inline-block rounded-lg bg-[#05893E] px-5 py-3 font-semibold text-white transition hover:bg-[#047735]"
                     >
                         হোম পেজে ফিরে যান
                     </Link>
@@ -72,7 +71,7 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
     const category: Category = await categoryRes.json();
     const products: Product[] = await productRes.json();
 
-    if (!category || !products || products.length === 0) {hw
+    if (!category || !products || products.length === 0) {
         return (
             <main className="min-h-screen bg-[#F0F5F0] px-4 py-12">
                 <div className="mx-auto max-w-6xl text-center">
@@ -86,7 +85,7 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
 
                     <Link
                         href="/"
-                        className="mt-6 inline-block rounded-lg bg-[#05893E] px-5 py-3 font-semibold text-white"
+                        className="mt-6 inline-block rounded-lg bg-[#05893E] px-5 py-3 font-semibold text-white transition hover:bg-[#047735]"
                     >
                         হোম পেজে ফিরে যান
                     </Link>
@@ -99,10 +98,26 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
         <main className="min-h-screen bg-[#F0F5F0] px-4 py-8 md:py-12">
             <div className="mx-auto max-w-6xl">
 
+                {/* Breadcrumb */}
+                <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                    <Link
+                        href="/"
+                        className="transition hover:text-[#05893E]"
+                    >
+                        হোম
+                    </Link>
+
+                    <span>/</span>
+
+                    <span className="font-medium text-gray-900">
+                        {category.nameBn}
+                    </span>
+                </div>
+
                 {/* Category Header */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-4">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white text-3xl shadow-sm">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white text-3xl shadow-sm">
                             {category.icon}
                         </div>
 
@@ -128,7 +143,7 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
 
                         <select
                             id="sort"
-                            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none"
+                            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-[#05893E]"
                             defaultValue="default"
                         >
                             <option value="default">ডিফল্ট</option>
@@ -143,22 +158,23 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
                 </div>
 
                 {/* Products */}
-                <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {products.map((product) => (
                         <Link
                             key={product.id}
                             href={`/products/${product.slug}`}
+                            className="block"
                         >
-                            <article className="rounded-xl border border-gray-200 bg-white p-4 transition hover:shadow-md">
+                            <article className="h-full rounded-xl border border-gray-200 bg-white p-4 transition duration-200 hover:-translate-y-1 hover:shadow-md">
 
                                 <div className="flex items-center justify-between gap-3">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-3xl">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <span className="shrink-0 text-3xl">
                                             {product.image}
                                         </span>
 
-                                        <div>
-                                            <h2 className="font-bold text-gray-900">
+                                        <div className="min-w-0">
+                                            <h2 className="truncate font-bold text-gray-900">
                                                 {product.nameBn}
                                             </h2>
 
@@ -169,19 +185,19 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
                                     </div>
 
                                     {product.change.dir === "up" && (
-                                        <span className="text-sm font-semibold text-red-500">
-                                            ▲ {product.change.pct}%
+                                        <span className="shrink-0 text-sm font-semibold text-red-500">
+                                            ▲ {Math.abs(product.change.pct)}%
                                         </span>
                                     )}
 
                                     {product.change.dir === "down" && (
-                                        <span className="text-sm font-semibold text-[#05893E]">
-                                            ▼ {product.change.pct}%
+                                        <span className="shrink-0 text-sm font-semibold text-[#05893E]">
+                                            ▼ {Math.abs(product.change.pct)}%
                                         </span>
                                     )}
 
                                     {product.change.dir === "flat" && (
-                                        <span className="text-sm text-gray-400">
+                                        <span className="shrink-0 text-sm text-gray-400">
                                             — ০.০%
                                         </span>
                                     )}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import NavLinks from "./NavLinks";
+import UserInfo from "./UserInfo";
 
 const categories = [
     { name: "চাল", icon: "🍚", slug: "chal" },
@@ -62,34 +63,24 @@ const Header = () => {
                             </h1>
 
                             <p className="mt-2 text-[11px] font-medium text-gray-500 sm:text-sm">
-                                মঙ্গলবার, ৬ অক্টোবর, ২০২৬
+                                {new Date().toLocaleDateString("bn-BD", {
+                                    weekday: "long",
+                                    day: "numeric",
+                                    month: "long",
+                                    year: "numeric",
+                                    timeZone: "Asia/Dhaka",
+                                })}
                             </p>
                         </div>
                     </Link>
 
                     {/* Authentication */}
-                    <div className="flex items-center gap-2 sm:gap-3">
-
-                        <Link
-                            href="/signin"
-                            className="rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#EAF7EF] hover:text-[#07883F] sm:px-5"
-                        >
-                            সাইন ইন
-                        </Link>
-
-                        <Link
-                            href="/signup"
-                            className="rounded-xl bg-[#07883F] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#067535] sm:px-6"
-                        >
-                            সাইন আপ
-                        </Link>
-
-                    </div>
+                    <UserInfo/>
                 </div>
             </div>
 
             {/* Category Navigation */}
-            <NavLinks/>
+            <NavLinks />
 
         </header>
     );
