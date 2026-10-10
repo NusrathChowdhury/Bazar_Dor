@@ -2,25 +2,12 @@ import Link from "next/link";
 import NavLinks from "./NavLinks";
 import UserInfo from "./UserInfo";
 
-const categories = [
-    { name: "চাল", icon: "🍚", slug: "chal" },
-    { name: "ডাল", icon: "🍲", slug: "dal" },
-    { name: "তেল", icon: "🛢️", slug: "tel" },
-    { name: "সবজি", icon: "🥬", slug: "shobji" },
-    { name: "মাছ", icon: "🐟", slug: "mach" },
-    { name: "মাংস", icon: "🍗", slug: "mangsho" },
-    { name: "ডিম-দুধ", icon: "🥛", slug: "dim-dudh" },
-    { name: "মসলা", icon: "🌶️", slug: "mosla" },
-];
-
 const Header = () => {
     return (
         <header className="w-full bg-white">
-
             {/* Main Header */}
             <div className="border-b border-gray-100">
                 <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:py-6">
-
                     {/* Logo + Brand */}
                     <Link
                         href="/"
@@ -41,24 +28,14 @@ const Header = () => {
                                     strokeLinejoin="round"
                                     d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 8H6"
                                 />
-                                <circle
-                                    cx="10"
-                                    cy="20"
-                                    r="1.3"
-                                    fill="white"
-                                />
-                                <circle
-                                    cx="18"
-                                    cy="20"
-                                    r="1.3"
-                                    fill="white"
-                                />
+                                <circle cx="10" cy="20" r="1.3" fill="white" />
+                                <circle cx="18" cy="20" r="1.3" fill="white" />
                             </svg>
                         </div>
 
                         {/* Brand */}
                         <div>
-                            <h1 className="text-[28px] font-black leading-none tracking-tight text-black  sm:text-[36px]">
+                            <h1 className="text-[28px] font-black leading-none tracking-tight text-black sm:text-[36px]">
                                 বাজার দর
                             </h1>
 
@@ -75,13 +52,12 @@ const Header = () => {
                     </Link>
 
                     {/* Authentication */}
-                    <UserInfo/>
+                    <UserInfo />
                 </div>
             </div>
 
             {/* Category Navigation */}
             <NavLinks />
-
         </header>
     );
 };

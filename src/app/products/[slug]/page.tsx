@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 
 interface Market {
     market: string;
@@ -33,17 +36,47 @@ interface ProductDetailsProps {
     }>;
 }
 
+const API_URL =
+    "https://openapi.programming-hero.com/api/bazardor/products";
+
 const ProductDetails = async ({ params }: ProductDetailsProps) => {
+    // Authentication check
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+
+    // Login না থাকলে sign-in page-এ পাঠাবে
+    if (!session) {
+        redirect("/signin");
+    }
+
     const { slug } = await params;
 
-    const res = await fetch(
-        "https://api.abcz.workers.dev/api/bazardor/products",
-        {
-            cache: "no-store",
-        }
-    );
+    let product: Product | undefined;
 
-    if (!res.ok) {
+    try {
+        const res = await fetch(API_URL, {
+            cache: "no-store",
+        });
+
+        if (!res.ok) {
+            throw new Error(`Products API failed: ${res.status}`);
+        }
+
+        const responseData = await res.json();
+
+        const products: Product[] = Array.isArray(responseData)
+            ? responseData
+            : Array.isArray(responseData?.data)
+              ? responseData.data
+              : Array.isArray(responseData?.products)
+                ? responseData.products
+                : [];
+
+        product = products.find((item) => item.slug === slug);
+    } catch (error) {
+        console.error("Product details API error:", error);
+
         return (
             <main className="min-h-screen bg-[#F0F5F0] px-4 py-12">
                 <div className="mx-auto max-w-5xl text-center">
@@ -57,7 +90,7 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
 
                     <Link
                         href="/"
-                        className="mt-6 inline-block rounded-lg bg-[#05893E] px-5 py-3 font-semibold text-white"
+                        className="mt-6 inline-block rounded-lg bg-[#05893E] px-5 py-3 font-semibold text-white transition hover:bg-[#047735]"
                     >
                         হোম পেজে ফিরে যান
                     </Link>
@@ -65,10 +98,6 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
             </main>
         );
     }
-
-    const products: Product[] = await res.json();
-
-    const product = products.find((item) => item.slug === slug);
 
     if (!product) {
         return (
@@ -84,7 +113,7 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
 
                     <Link
                         href="/"
-                        className="mt-6 inline-block rounded-lg bg-[#05893E] px-5 py-3 font-semibold text-white"
+                        className="mt-6 inline-block rounded-lg bg-[#05893E] px-5 py-3 font-semibold text-white transition hover:bg-[#047735]"
                     >
                         হোম পেজে ফিরে যান
                     </Link>
@@ -93,19 +122,26 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
         );
     }
 
-    const minimumPrice = Math.min(
-        ...product.markets.map((market) => market.min)
-    );
+    const markets = product.markets ?? [];
 
-    const maximumPrice = Math.max(
-        ...product.markets.map((market) => market.max)
-    );
+    const minimumPrice =
+        markets.length > 0
+            ? Math.min(...markets.map((market) => market.min))
+            : product.today;
+
+    const maximumPrice =
+        markets.length > 0
+            ? Math.max(...markets.map((market) => market.max))
+            : product.today;
 
     const averagePrice =
-        product.markets.reduce(
-            (total, market) => total + (market.min + market.max) / 2,
-            0
-        ) / product.markets.length;
+        markets.length > 0
+            ? markets.reduce(
+                  (total, market) =>
+                      total + (market.min + market.max) / 2,
+                  0
+              ) / markets.length
+            : product.today;
 
     const priceDifference = Math.abs(
         product.today - product.yesterday
@@ -114,7 +150,6 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
     return (
         <main className="min-h-screen bg-[#F0F5F0] px-4 py-8 md:py-12">
             <div className="mx-auto max-w-6xl">
-
                 {/* Breadcrumb */}
                 <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-gray-500">
                     <Link
@@ -141,15 +176,12 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
                 </div>
 
                 <article className="overflow-hidden rounded-2xl bg-white shadow-sm">
-
                     {/* Product Header + Primary Price */}
                     <div className="p-5 md:p-8">
                         <div className="grid gap-6 md:grid-cols-2 md:items-center">
-
-                            {/* Product Identity - Left */}
+                            {/* Product Identity */}
                             <div>
                                 <div className="flex items-center gap-4">
-                                    {/* Product Icon */}
                                     <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[#F0F5F0] text-5xl">
                                         {product.image}
                                     </div>
@@ -170,7 +202,7 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
                                     </div>
                                 </div>
 
-                                {/* Micro Context */}
+                                {/* Price Change */}
                                 <div className="mt-5">
                                     {product.change.dir === "up" && (
                                         <p className="text-sm font-medium text-red-500">
@@ -200,7 +232,7 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
                                 </div>
                             </div>
 
-                            {/* Primary Metric - Right */}
+                            {/* Today's Price */}
                             <div className="rounded-2xl bg-[#EAF7EF] p-6 md:p-8">
                                 <p className="text-sm font-medium text-gray-600">
                                     আজকের দাম
@@ -219,7 +251,7 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
                                 <div className="mt-3">
                                     {product.change.dir === "up" && (
                                         <span className="font-semibold text-red-500">
-                                            ▲ {product.change.pct}%
+                                            ▲ {Math.abs(product.change.pct)}%
                                         </span>
                                     )}
 
@@ -246,8 +278,6 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
                         </h2>
 
                         <div className="mt-5 grid gap-4 sm:grid-cols-3">
-
-                            {/* Lowest */}
                             <div className="rounded-xl border border-gray-100 bg-gray-50 p-5">
                                 <p className="text-sm text-gray-500">
                                     সর্বনিম্ন দাম
@@ -261,7 +291,6 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
                                 </p>
                             </div>
 
-                            {/* Highest */}
                             <div className="rounded-xl border border-gray-100 bg-gray-50 p-5">
                                 <p className="text-sm text-gray-500">
                                     সর্বাধিক দাম
@@ -275,7 +304,6 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
                                 </p>
                             </div>
 
-                            {/* Average */}
                             <div className="rounded-xl bg-[#F0F5F0] p-5">
                                 <p className="text-sm text-gray-500">
                                     গড় দাম
@@ -288,7 +316,6 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
                                     </span>
                                 </p>
                             </div>
-
                         </div>
                     </div>
 
@@ -298,81 +325,78 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
                             বাজারভিত্তিক আজকের দাম
                         </h2>
 
-                        <div className="mt-5 overflow-x-auto">
-                            <table className="w-full min-w-[650px]">
+                        {markets.length === 0 ? (
+                            <p className="mt-4 text-sm text-gray-500">
+                                এই পণ্যের বাজারভিত্তিক দামের তথ্য নেই।
+                            </p>
+                        ) : (
+                            <div className="mt-5 overflow-x-auto">
+                                <table className="w-full min-w-[650px]">
+                                    <thead>
+                                        <tr className="border-b border-gray-200 text-left">
+                                            <th className="px-4 py-3 text-sm font-semibold text-gray-600">
+                                                বাজার
+                                            </th>
 
-                                <thead>
-                                    <tr className="border-b border-gray-200 text-left">
-                                        <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                                            বাজার
-                                        </th>
+                                            <th className="px-4 py-3 text-sm font-semibold text-gray-600">
+                                                বিভাগ
+                                            </th>
 
-                                        <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                                            বিভাগ
-                                        </th>
+                                            <th className="px-4 py-3 text-sm font-semibold text-gray-600">
+                                                সর্বনিম্ন
+                                            </th>
 
-                                        <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                                            সর্বনিম্ন
-                                        </th>
+                                            <th className="px-4 py-3 text-sm font-semibold text-gray-600">
+                                                সর্বাধিক
+                                            </th>
 
-                                        <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                                            সর্বাধিক
-                                        </th>
-
-                                        <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                                            গড়
-                                        </th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {product.markets.map((market, index) => (
-                                        <tr
-                                            key={index}
-                                            className="border-b border-gray-100 last:border-0"
-                                        >
-                                            <td className="px-4 py-4 font-medium text-gray-900">
-                                                {market.market}
-                                            </td>
-
-                                            <td className="px-4 py-4 text-gray-600">
-                                                {market.division}
-                                            </td>
-
-                                            <td className="px-4 py-4 text-gray-700">
-                                                {market.min}{" "}
-                                                <span className="font-normal">
-                                                    টাকা
-                                                </span>
-                                            </td>
-
-                                            <td className="px-4 py-4 text-gray-700">
-                                                {market.max}{" "}
-                                                <span className="font-normal">
-                                                    টাকা
-                                                </span>
-                                            </td>
-
-                                            <td className="px-4 py-4 text-gray-900">
-                                                <span className="font-bold">
-                                                    {(
-                                                        (market.min +
-                                                            market.max) /
-                                                        2
-                                                    ).toFixed(2)}
-                                                </span>{" "}
-                                                <span className="font-normal">
-                                                    টাকা
-                                                </span>
-                                            </td>
+                                            <th className="px-4 py-3 text-sm font-semibold text-gray-600">
+                                                গড়
+                                            </th>
                                         </tr>
-                                    ))}
-                                </tbody>
+                                    </thead>
 
-                            </table>
-                        </div>
+                                    <tbody>
+                                        {markets.map((market, index) => (
+                                            <tr
+                                                key={`${market.market}-${index}`}
+                                                className="border-b border-gray-100 last:border-0"
+                                            >
+                                                <td className="px-4 py-4 font-medium text-gray-900">
+                                                    {market.market}
+                                                </td>
+
+                                                <td className="px-4 py-4 text-gray-600">
+                                                    {market.division}
+                                                </td>
+
+                                                <td className="px-4 py-4 text-gray-700">
+                                                    {market.min} টাকা
+                                                </td>
+
+                                                <td className="px-4 py-4 text-gray-700">
+                                                    {market.max} টাকা
+                                                </td>
+
+                                                <td className="px-4 py-4 text-gray-900">
+                                                    <span className="font-bold">
+                                                        {(
+                                                            (market.min +
+                                                                market.max) /
+                                                            2
+                                                        ).toFixed(2)}
+                                                    </span>{" "}
+                                                    <span className="font-normal">
+                                                        টাকা
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                     </div>
-
                 </article>
             </div>
         </main>

@@ -1,28 +1,97 @@
 import Link from "next/link";
 
-interface Product {
-    id: number;
-    slug: string;
-    nameBn: string;
-    categoryNameBn: string;
-    image: string;
-    unit: string;
-    today: number;
-    change: {
-        dir: "up" | "down" | "flat";
-        pct: number;
-    };
+interface ProductChange {
+    dir: "up" | "down" | "flat";
+    pct: number;
 }
 
-const Products = async () => {
-    const res = await fetch(
-        "https://api.abcz.workers.dev/api/bazardor/products",
-        {
-            cache: "no-store",
-        }
-    );
+interface Product {
+    id: string | number;
+    slug: string;
+    nameBn: string;
+    categoryNameBn?: string;
+    categoryIcon?: string;
+    image?: string;
+    unit: string;
+    today: number;
+    yesterday?: number;
+    change?: ProductChange;
+}
 
-    if (!res.ok) {
+interface ApiResponse {
+    data?: Product[] | {
+        products?: Product[];
+        items?: Product[];
+    };
+    products?: Product[];
+}
+
+const API_URL =
+    "https://openapi.programming-hero.com/api/bazardor/products";
+
+const getProducts = (result: ApiResponse | Product[]): Product[] => {
+    if (Array.isArray(result)) {
+        return result;
+    }
+
+    if (Array.isArray(result.data)) {
+        return result.data;
+    }
+
+    return (
+        result.data?.products ??
+        result.data?.items ??
+        result.products ??
+        []
+    );
+};
+
+const getChange = (product: Product): ProductChange => {
+    if (product.change) {
+        return product.change;
+    }
+
+    if (product.yesterday === undefined || product.yesterday === 0) {
+        return { dir: "flat", pct: 0 };
+    }
+
+    const difference = product.today - product.yesterday;
+
+    return {
+        dir: difference > 0 ? "up" : difference < 0 ? "down" : "flat",
+        pct: Number(
+            ((difference / product.yesterday) * 100).toFixed(1)
+        ),
+    };
+};
+
+const Products = async () => {
+    let products: Product[] = [];
+
+    try {
+        const res = await fetch(API_URL, {
+            cache: "no-store",
+        });
+
+        if (!res.ok) {
+            console.error("Failed to fetch products:", res.status);
+
+            return (
+                <section className="bg-[#F0F5F0] px-5 py-12">
+                    <div className="mx-auto max-w-6xl text-center">
+                        <p className="text-gray-500">
+                            পণ্যের তথ্য লোড করা যায়নি।
+                        </p>
+                    </div>
+                </section>
+            );
+        }
+
+        const result: ApiResponse | Product[] = await res.json();
+        products = getProducts(result);
+    } catch (error) {
+        console.error("Error fetching products:", error);
+
         return (
             <section className="bg-[#F0F5F0] px-5 py-12">
                 <div className="mx-auto max-w-6xl text-center">
@@ -34,22 +103,72 @@ const Products = async () => {
         );
     }
 
-    const products: Product[] = await res.json();
-
     const risers = products
-        .filter((product) => product.change.dir === "up")
-        .sort((a, b) => b.change.pct - a.change.pct)
+        .filter((product) => getChange(product).dir === "up")
+        .sort((a, b) => getChange(b).pct - getChange(a).pct)
         .slice(0, 6);
 
     const fallers = products
-        .filter((product) => product.change.dir === "down")
-        .sort((a, b) => a.change.pct - b.change.pct)
+        .filter((product) => getChange(product).dir === "down")
+        .sort((a, b) => getChange(a).pct - getChange(b).pct)
         .slice(0, 6);
+
+    const renderProductCard = (product: Product) => {
+        const change = getChange(product);
+
+        return (
+            <article className="rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:shadow-md">
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                        <span className="shrink-0 text-3xl">
+                            {product.image ?? product.categoryIcon ?? "🛒"}
+                        </span>
+
+                        <div className="min-w-0">
+                            <h3 className="truncate font-bold text-gray-900">
+                                {product.nameBn}
+                            </h3>
+
+                            <p className="text-sm text-gray-500">
+                                প্রতি {product.unit}
+                            </p>
+                        </div>
+                    </div>
+
+                    {change.dir === "up" && (
+                        <span className="shrink-0 text-sm font-semibold text-red-500">
+                            ▲ {Math.abs(change.pct)}%
+                        </span>
+                    )}
+
+                    {change.dir === "down" && (
+                        <span className="shrink-0 text-sm font-semibold text-[#05893E]">
+                            ▼ {Math.abs(change.pct)}%
+                        </span>
+                    )}
+
+                    {change.dir === "flat" && (
+                        <span className="shrink-0 text-sm text-gray-400">
+                            — ০.০%
+                        </span>
+                    )}
+                </div>
+
+                <div className="mt-4 border-t border-gray-100 pt-3">
+                    <p className="text-xs text-gray-500">আজকের দাম</p>
+
+                    <p className="mt-1 text-xl text-gray-900">
+                        <span className="font-bold">{product.today}</span>{" "}
+                        <span className="font-normal">টাকা</span>
+                    </p>
+                </div>
+            </article>
+        );
+    };
 
     return (
         <section className="bg-[#F0F5F0] px-5 py-12">
             <div className="mx-auto max-w-6xl">
-
                 {/* Price Increased */}
                 <div id="আজ-দাম-বেড়েছে">
                     <h2 className="mb-5 text-2xl font-bold text-gray-900">
@@ -64,46 +183,7 @@ const Products = async () => {
                                 href={`/products/${product.slug}`}
                                 className="block"
                             >
-                                <article className="rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:shadow-md">
-
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div className="flex min-w-0 items-center gap-3">
-                                            <span className="shrink-0 text-3xl">
-                                                {product.image}
-                                            </span>
-
-                                            <div className="min-w-0">
-                                                <h3 className="truncate font-bold text-gray-900">
-                                                    {product.nameBn}
-                                                </h3>
-
-                                                <p className="text-sm text-gray-500">
-                                                    প্রতি {product.unit}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <span className="shrink-0 text-sm font-semibold text-red-500">
-                                            ▲ {Math.abs(product.change.pct)}%
-                                        </span>
-                                    </div>
-
-                                    <div className="mt-4 border-t border-gray-100 pt-3">
-                                        <p className="text-xs text-gray-500">
-                                            আজকের দাম
-                                        </p>
-
-                                        <p className="mt-1 text-xl text-gray-900">
-                                            <span className="font-bold">
-                                                {product.today}
-                                            </span>{" "}
-                                            <span className="font-normal">
-                                                টাকা
-                                            </span>
-                                        </p>
-                                    </div>
-
-                                </article>
+                                {renderProductCard(product)}
                             </Link>
                         ))}
                     </div>
@@ -123,56 +203,14 @@ const Products = async () => {
                                 href={`/products/${product.slug}`}
                                 className="block"
                             >
-                                <article className="rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:shadow-md">
-
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div className="flex min-w-0 items-center gap-3">
-                                            <span className="shrink-0 text-3xl">
-                                                {product.image}
-                                            </span>
-
-                                            <div className="min-w-0">
-                                                <h3 className="truncate font-bold text-gray-900">
-                                                    {product.nameBn}
-                                                </h3>
-
-                                                <p className="text-sm text-gray-500">
-                                                    প্রতি {product.unit}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <span className="shrink-0 text-sm font-semibold text-[#05893E]">
-                                            ▼ {Math.abs(product.change.pct)}%
-                                        </span>
-                                    </div>
-
-                                    <div className="mt-4 border-t border-gray-100 pt-3">
-                                        <p className="text-xs text-gray-500">
-                                            আজকের দাম
-                                        </p>
-
-                                        <p className="mt-1 text-xl text-gray-900">
-                                            <span className="font-bold">
-                                                {product.today}
-                                            </span>{" "}
-                                            <span className="font-normal">
-                                                টাকা
-                                            </span>
-                                        </p>
-                                    </div>
-
-                                </article>
+                                {renderProductCard(product)}
                             </Link>
                         ))}
                     </div>
                 </div>
 
                 {/* All Products */}
-                <div
-                    id="সব-পণ্য"
-                    className="mt-12"
-                >
+                <div id="সব-পণ্য" className="mt-12">
                     <h2 className="mb-2 text-2xl font-bold text-gray-900">
                         সব পণ্য
                     </h2>
@@ -188,65 +226,11 @@ const Products = async () => {
                                 href={`/products/${product.slug}`}
                                 className="block"
                             >
-                                <article className="rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:shadow-md">
-
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div className="flex min-w-0 items-center gap-3">
-                                            <span className="shrink-0 text-3xl">
-                                                {product.image}
-                                            </span>
-
-                                            <div className="min-w-0">
-                                                <h3 className="truncate font-bold text-gray-900">
-                                                    {product.nameBn}
-                                                </h3>
-
-                                                <p className="text-sm text-gray-500">
-                                                    প্রতি {product.unit}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        {product.change.dir === "up" && (
-                                            <span className="shrink-0 text-sm font-semibold text-red-500">
-                                                ▲ {Math.abs(product.change.pct)}%
-                                            </span>
-                                        )}
-
-                                        {product.change.dir === "down" && (
-                                            <span className="shrink-0 text-sm font-semibold text-[#05893E]">
-                                                ▼ {Math.abs(product.change.pct)}%
-                                            </span>
-                                        )}
-
-                                        {product.change.dir === "flat" && (
-                                            <span className="shrink-0 text-sm text-gray-400">
-                                                — ০.০%
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <div className="mt-4 border-t border-gray-100 pt-3">
-                                        <p className="text-xs text-gray-500">
-                                            আজকের দাম
-                                        </p>
-
-                                        <p className="mt-1 text-xl text-gray-900">
-                                            <span className="font-bold">
-                                                {product.today}
-                                            </span>{" "}
-                                            <span className="font-normal">
-                                                টাকা
-                                            </span>
-                                        </p>
-                                    </div>
-
-                                </article>
+                                {renderProductCard(product)}
                             </Link>
                         ))}
                     </div>
                 </div>
-
             </div>
         </section>
     );

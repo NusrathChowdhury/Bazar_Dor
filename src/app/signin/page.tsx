@@ -27,6 +27,7 @@ const SignInPage = () => {
         const email = String(formData.get("email") || "")
             .trim()
             .toLowerCase();
+
         const password = String(formData.get("password") || "");
 
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -63,13 +64,11 @@ const SignInPage = () => {
                     );
                 }
 
-                setIsSubmitting(false);
                 return;
             }
 
             if (!data) {
                 toast.error("সাইন ইন নিশ্চিত করা যায়নি। আবার চেষ্টা করুন");
-                setIsSubmitting(false);
                 return;
             }
 
@@ -81,6 +80,7 @@ const SignInPage = () => {
             }, 700);
         } catch {
             toast.error("কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন");
+        } finally {
             setIsSubmitting(false);
         }
     };
@@ -101,12 +101,14 @@ const SignInPage = () => {
                     error.message ||
                         `${provider === "google" ? "Google" : "GitHub"} দিয়ে সাইন ইন করা যায়নি`
                 );
+
                 setSocialLoading(null);
             }
         } catch {
             toast.error(
-                "সোশ্যাল লগইন চালু করতে Better Auth provider configuration প্রয়োজন"
+                `${provider === "google" ? "Google" : "GitHub"} দিয়ে সাইন ইন করা যায়নি। OAuth configuration পরীক্ষা করুন।`
             );
+
             setSocialLoading(null);
         }
     };
@@ -126,7 +128,6 @@ const SignInPage = () => {
 
             <div className="w-full max-w-md">
                 <div className="rounded-2xl bg-white p-6 shadow-[0_16px_50px_-20px_rgba(5,137,62,0.20)] sm:p-8">
-
                     {/* Brand and Heading */}
                     <div className="mb-7 text-center">
                         <Link
@@ -248,7 +249,7 @@ const SignInPage = () => {
                         onClick={() => handleSocialLogin("github")}
                         className="mt-3 flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                        <span className="font-bold text-xs">GH</span>
+                        <span className="text-xs font-bold">GH</span>
                         {socialLoading === "github"
                             ? "GitHub-এ সংযোগ হচ্ছে..."
                             : "GitHub দিয়ে সাইন ইন করুন"}
