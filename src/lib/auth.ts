@@ -1,4 +1,3 @@
-
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
@@ -6,7 +5,7 @@ import { mongodbAdapter } from "better-auth/adapters/mongodb";
 const mongodbUrl = process.env.MONGODB_URL;
 
 if (!mongodbUrl) {
-    throw new Error("MONGODB_URL is missing from .env.local");
+    throw new Error("MONGODB_URL is missing");
 }
 
 const client = new MongoClient(mongodbUrl);
@@ -17,6 +16,13 @@ export const auth = betterAuth({
 
     secret: process.env.BETTER_AUTH_SECRET,
     baseURL: process.env.BETTER_AUTH_URL,
+
+    trustedOrigins: [
+        "http://localhost:3000",
+        "https://bazardor-fnc9.vercel.app",
+        "https://bazardor-yxj81p8kb-fnc9.vercel.app",
+        "https://bazardor-gamma-blue.vercel.app",
+    ],
 
     emailAndPassword: {
         enabled: true,
