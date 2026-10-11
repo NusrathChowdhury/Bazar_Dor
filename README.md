@@ -155,7 +155,7 @@ const API_URL =
   "https://openapi.programming-hero.com/api/bazardor/products";
 
 const response = await fetch(API_URL, {
-  cache: "no-store",
+  next: { revalidate: 30 },
 });
 
 if (!response.ok) {

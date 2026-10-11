@@ -15,7 +15,7 @@ async function NavLinks() {
 
     try {
         const response = await fetch(API_URL, {
-            cache: "no-store",
+            next: { revalidate: 30 },
         });
 
         if (response.ok) {

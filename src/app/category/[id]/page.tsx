@@ -59,14 +59,14 @@ const CategoryPage = ({ params }: CategoryPageProps) => {
                     fetch(
                         `${API_BASE_URL}/categories/${encodeURIComponent(id)}`,
                         {
-                            cache: "no-store",
+                            next: { revalidate: 30 },
                             signal: controller.signal,
                         }
                     ),
                     fetch(
                         `${API_BASE_URL}/products?category=${encodeURIComponent(id)}`,
                         {
-                            cache: "no-store",
+                            next: { revalidate: 30 },
                             signal: controller.signal,
                         }
                     ),

@@ -52,7 +52,7 @@ const Marquee = async () => {
 
     try {
         const res = await fetch(API_URL, {
-            cache: "no-store",
+            next: { revalidate: 30 },
         });
 
         if (!res.ok) {
