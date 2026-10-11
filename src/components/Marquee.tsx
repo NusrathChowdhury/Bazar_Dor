@@ -72,7 +72,7 @@ const Marquee = async () => {
             <div className="h-9 w-full overflow-hidden">
                 <MarqueeText
                     direction="right"
-                    loop={true}
+                    // loop={true}
                     className="text-sm font-semibold leading-9 text-gray-700"
                 >
                     {products.map((product) => {
