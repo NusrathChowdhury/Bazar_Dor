@@ -19,7 +19,7 @@ export const auth = betterAuth({
 
     trustedOrigins: [
         "http://localhost:3000",
-         "https://bazardor-fnc9.vercel.app",
+         "https://bazardor-gamma-blue.vercel.app",
     ],
 
     emailAndPassword: {
