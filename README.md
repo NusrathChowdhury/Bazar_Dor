@@ -264,8 +264,8 @@ BazarDor can be deployed on [Vercel](https://vercel.com/) or another platform co
 
 | Resource             | Link                          |
 | -------------------- | ----------------------------- |
-| 🌍 Live Website      | Add your deployed website URL |
-| 💻 GitHub Repository | Add your repository URL       |
+| 🌍 Live Website      |https://bazardor-gamma-blue.vercel.app |
+| 💻 GitHub Repository |https://github.com/NusrathChowdhury/Bazar_Dor|
 
 </div>
 
