@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 
 interface Market {
@@ -45,7 +45,7 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
         headers: await headers(),
     });
 
-    // Login না থাকলে sign-in page-এ পাঠাবে
+    // Redirect unauthenticated users
     if (!session) {
         redirect("/signin");
     }
@@ -99,27 +99,9 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
         );
     }
 
+    // Show the custom not-found page for an invalid product slug
     if (!product) {
-        return (
-            <main className="min-h-screen bg-[#F0F5F0] px-4 py-12">
-                <div className="mx-auto max-w-5xl text-center">
-                    <h1 className="text-3xl font-bold text-gray-900">
-                        পণ্য পাওয়া যায়নি
-                    </h1>
-
-                    <p className="mt-3 text-gray-500">
-                        আপনি যে পণ্যটি খুঁজছেন সেটি পাওয়া যায়নি।
-                    </p>
-
-                    <Link
-                        href="/"
-                        className="mt-6 inline-block rounded-lg bg-[#05893E] px-5 py-3 font-semibold text-white transition hover:bg-[#047735]"
-                    >
-                        হোম পেজে ফিরে যান
-                    </Link>
-                </div>
-            </main>
-        );
+        notFound();
     }
 
     const markets = product.markets ?? [];
@@ -176,7 +158,7 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
                 </div>
 
                 <article className="overflow-hidden rounded-2xl bg-white shadow-sm">
-                    {/* Product Header + Primary Price */}
+                    {/* Product Header */}
                     <div className="p-5 md:p-8">
                         <div className="grid gap-6 md:grid-cols-2 md:items-center">
                             {/* Product Identity */}
@@ -186,17 +168,22 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
                                         {product.image}
                                     </div>
 
-                                    <div>
-                                        <p className="text-sm font-medium text-[#05893E]">
+                                    <div className="min-w-0">
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-[#EAF7EF] px-3 py-1 text-sm font-medium text-[#05893E]">
                                             {product.categoryIcon}{" "}
                                             {product.categoryNameBn}
-                                        </p>
+                                        </span>
 
-                                        <h1 className="mt-1 text-2xl font-bold text-gray-900 md:text-4xl">
+                                        <h1 className="mt-2 text-2xl font-bold text-gray-900 md:text-4xl">
                                             {product.nameBn}
                                         </h1>
 
-                                        <p className="mt-1 text-sm text-gray-500">
+                                        <p className="mt-2 text-sm leading-6 text-gray-500">
+                                            বাজারভিত্তিক আজকের দাম,
+                                            সর্বনিম্ন ও সর্বাধিক দামের তথ্য
+                                        </p>
+
+                                        <p className="mt-2 text-sm font-medium text-gray-600">
                                             প্রতি {product.unit}
                                         </p>
                                     </div>
@@ -251,13 +238,15 @@ const ProductDetails = async ({ params }: ProductDetailsProps) => {
                                 <div className="mt-3">
                                     {product.change.dir === "up" && (
                                         <span className="font-semibold text-red-500">
-                                            ▲ {Math.abs(product.change.pct)}%
+                                            ▲{" "}
+                                            {Math.abs(product.change.pct)}%
                                         </span>
                                     )}
 
                                     {product.change.dir === "down" && (
                                         <span className="font-semibold text-[#05893E]">
-                                            ▼ {Math.abs(product.change.pct)}%
+                                            ▼{" "}
+                                            {Math.abs(product.change.pct)}%
                                         </span>
                                     )}
 

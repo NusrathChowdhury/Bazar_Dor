@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -9,13 +10,15 @@ import "react-toastify/dist/ReactToastify.css";
 
 const SignUPPage = () => {
     const router = useRouter();
+
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [socialLoading, setSocialLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
     const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (isSubmitting) return;
+        if (isSubmitting || socialLoading) return;
 
         const formData = new FormData(e.currentTarget);
 
@@ -47,7 +50,7 @@ const SignUPPage = () => {
                 name,
                 email,
                 password,
-                callbackURL: "/",
+                callbackURL: "/signin",
             });
 
             if (error) {
@@ -69,7 +72,7 @@ const SignUPPage = () => {
                     );
                 } else {
                     toast.error(
-                        message || "অ্যাকাউন্ট তৈরি করা যায়নি। আবার চেষ্টা করুন"
+                        message || "অ্যাকাউন্ট তৈরি করা যায়নি। আবার চেষ্টা করুন।"
                     );
                 }
 
@@ -83,17 +86,43 @@ const SignUPPage = () => {
                 return;
             }
 
-            // Keep the Better Auth session; do not sign the user out.
             toast.success("অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!");
 
             window.setTimeout(() => {
-                router.replace("/");
+                router.replace("/signin");
                 router.refresh();
             }, 800);
         } catch {
-            toast.error("কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন");
+            toast.error("কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন।");
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleSocialSignIn = async (
+        provider: "google" | "github"
+    ) => {
+        if (socialLoading || isSubmitting) return;
+
+        setSocialLoading(true);
+
+        try {
+            const { error } = await authClient.signIn.social({
+                provider,
+                callbackURL: "/",
+            });
+
+            if (error) {
+                toast.error(
+                    error.message || "সোশ্যাল লগইন করা যায়নি। আবার চেষ্টা করুন।"
+                );
+                setSocialLoading(false);
+            }
+        } catch {
+            toast.error(
+                "সোশ্যাল লগইন করা যায়নি। আবার চেষ্টা করুন।"
+            );
+            setSocialLoading(false);
         }
     };
 
@@ -110,7 +139,6 @@ const SignUPPage = () => {
 
             <div className="w-full max-w-md">
                 <div className="rounded-2xl bg-white p-6 shadow-[0_16px_50px_-20px_rgba(5,137,62,0.20)] sm:p-8">
-
                     {/* Brand and Heading */}
                     <div className="mb-7 text-center">
                         <Link
@@ -218,10 +246,10 @@ const SignUPPage = () => {
                             </p>
                         </div>
 
-                        {/* Register */}
+                        {/* Register Button */}
                         <button
                             type="submit"
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || socialLoading}
                             className="mt-5 w-full rounded-xl bg-[#05893E] px-4 py-3.5 text-sm font-bold text-white shadow-md shadow-[#05893E]/15 transition hover:bg-[#047735] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {isSubmitting
@@ -233,29 +261,36 @@ const SignUPPage = () => {
                     {/* Divider */}
                     <div className="my-6 flex items-center gap-3">
                         <div className="h-px flex-1 bg-gray-100" />
-                        <span className="text-xs text-gray-400">অথবা</span>
+                        <span className="text-xs text-gray-400">
+                            অথবা
+                        </span>
                         <div className="h-px flex-1 bg-gray-100" />
                     </div>
 
-                    {/* Social Login — enable after configuring providers */}
+                    {/* Google Sign In */}
                     <button
                         type="button"
-                        disabled
-                        className="flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-400 opacity-75"
+                        disabled={socialLoading || isSubmitting}
+                        onClick={() => handleSocialSignIn("google")}
+                        className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:border-[#05893E] hover:bg-[#F7FAF7] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         <span className="font-bold">G</span>
-                        Google দিয়ে চালিয়ে যান
-                        <span className="text-xs">(শীঘ্রই)</span>
+                        {socialLoading
+                            ? "অপেক্ষা করুন..."
+                            : "Google দিয়ে চালিয়ে যান"}
                     </button>
 
+                    {/* GitHub Sign In */}
                     <button
                         type="button"
-                        disabled
-                        className="mt-3 flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-400 opacity-75"
+                        disabled={socialLoading || isSubmitting}
+                        onClick={() => handleSocialSignIn("github")}
+                        className="mt-3 flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:border-[#05893E] hover:bg-[#F7FAF7] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         <span className="font-bold">GH</span>
-                        GitHub দিয়ে চালিয়ে যান
-                        <span className="text-xs">(শীঘ্রই)</span>
+                        {socialLoading
+                            ? "অপেক্ষা করুন..."
+                            : "GitHub দিয়ে চালিয়ে যান"}
                     </button>
 
                     {/* Sign In */}

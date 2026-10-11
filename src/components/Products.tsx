@@ -136,13 +136,13 @@ const Products = async () => {
                     </div>
 
                     {change.dir === "up" && (
-                        <span className="shrink-0 text-sm font-semibold text-red-500">
+                        <span className="shrink-0 text-sm font-semibold text-[#05893E]">
                             ▲ {Math.abs(change.pct)}%
                         </span>
                     )}
 
                     {change.dir === "down" && (
-                        <span className="shrink-0 text-sm font-semibold text-[#05893E]">
+                        <span className="shrink-0 text-sm font-semibold text-red-500">
                             ▼ {Math.abs(change.pct)}%
                         </span>
                     )}
