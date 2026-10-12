@@ -177,7 +177,7 @@ The API response should be handled according to its actual data structure.
 
 ### 1. Clone the repository
 
-Replace the placeholder with your actual GitHub repository URL.
+Replace the placeholder with your actual GitHub repository URL of project.
 
 ```bash
 git clone YOUR_GITHUB_REPOSITORY_URL
