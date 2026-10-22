@@ -197,7 +197,7 @@ npm install
 
 ### 4. Configure environment variables
 
-Create a `.env.local` file in the project root and add the variables required by your Better Auth and database configuration.
+Create a new `.env.local` file in the project root and add the variables required by your Better Auth and database configuration.
 
 ```env
 BETTER_AUTH_SECRET=your_secret_here
